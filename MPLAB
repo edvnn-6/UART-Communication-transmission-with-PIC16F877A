@@ -1,0 +1,71 @@
+/*
+ * File:   uartcommunication.c
+ * Author: EdvinJoseVakaparamban
+ *
+ * Created on April 25, 2025, 3:02 PM
+ */
+#pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator)
+#pragma config WDTE = ON        // Watchdog Timer Enable bit (WDT enabled)
+#pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
+#pragma config BOREN = ON       // Brown-out Reset Enable bit (BOR enabled)
+#pragma config LVP = ON         // Low-Voltage (Single-Supply) In-Circuit Serial Programming Enable bit (RB3/PGM pin has PGM function; low-voltage programming enabled)
+#pragma config CPD = OFF        // Data EEPROM Memory Code Protection bit (Data EEPROM code protection off)
+#pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
+#pragma config CP = OFF 
+
+#include <xc.h>
+#include <stdint.h>
+#define _XTAL_FREQ 16000000
+//--------------------------------
+//--------------------------------
+// Functions Declarations
+void UART_TX_Init(void);
+void UART_Write(uint8_t);
+uint8_t UART_TX_Empty();
+//--------------------------------
+// Main Routine
+void main(void) 
+{
+  //--[ Peripherals & IO Configurations ]--
+  UART_TX_Init(); // Initialize The UART in Master Mode @ 9600bps
+  uint8_t Data = 'A'; // The Data Byte
+  TRISD = 0x00; // Output Port (4-Pins)
+  PORTD = 0x00; // Initially OFF
+  //---------------------------
+  while(1)
+  {
+      UART_Write(Data);
+      __delay_ms(250);
+      
+  }
+  return;
+
+}
+//--------------------------------
+// Functions Definitions
+ 
+void UART_TX_Init(void)
+{
+  BRGH = 1;   // Set For High-Speed Baud Rate
+  SPBRG = 104; // Set The Baud Rate To Be 9600 bps
+  //--[ Enable The Ascynchronous Serial Port ]--
+  SYNC = 0;
+  SPEN = 1;
+  //--[ Set The RX-TX Pins to be in UART mode (not io) ]--
+  TRISC6 = 1;  // As stated in the datasheet
+  TRISC7 = 1;  // As stated in the datasheet
+  TXEN = 1; // Enable UART Transmission
+}
+
+ 
+void UART_Write(uint8_t data)
+{
+  while(!TRMT);
+  TXREG = data;
+}
+
+uint8_t UART_TX_Empty(){
+    
+
+    return TRMT;
+}
